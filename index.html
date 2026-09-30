@@ -37,16 +37,6 @@
     box-shadow: 0 10px 40px rgba(0,0,0,.45);
   }
   .promo { display: block; width: 100%; height: auto; }
-  .cargando {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 9 / 16;
-    color: var(--texto-suave);
-    font-size: .95rem;
-    text-align: center;
-    padding: 24px;
-  }
   .acciones { margin-top: 18px; display: grid; gap: 10px; }
   .boton {
     display: block;
@@ -82,9 +72,8 @@
 <body>
   <main class="contenedor">
     <div class="marco">
-      <div class="cargando" id="cargando">Cargando la promoción…</div>
       <a id="ligaImagen" href="https://www.planetfitness.mx/descuentos" target="_blank" rel="noopener">
-        <img class="promo" id="promo" alt="Benefitness: descuentos exclusivos pf Black Card en marcas participantes." style="display:none">
+        <img class="promo" id="promo" src="promo.jpg" alt="Benefitness: descuentos exclusivos pf Black Card en marcas participantes.">
       </a>
     </div>
 
@@ -98,20 +87,5 @@
     </p>
   </main>
 
-<script>
-  // La imagen vive en OneDrive: al reemplazarla ahí, esta página muestra la nueva.
-  var ORIGEN = "https://fitnessparatodoss-my.sharepoint.com/:i:/g/personal/marketing_fpt_com_mx/IQB8zY5HrNBASLpwdS5jQ-98Ab-Y3E9keh01VoyFBFVrjPM?download=1";
-  var img = document.getElementById("promo");
-  var cargando = document.getElementById("cargando");
-  img.onload = function () {
-    cargando.style.display = "none";
-    img.style.display = "block";
-  };
-  img.onerror = function () {
-    cargando.textContent = "No se pudo cargar la promoción. Revisa tu conexión e inténtalo de nuevo.";
-  };
-  // El parámetro de tiempo evita que el celular muestre una imagen vieja guardada en caché.
-  img.src = ORIGEN + "&cb=" + Math.floor(Date.now() / 60000);
-</script>
 </body>
 </html>
