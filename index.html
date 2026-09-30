@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benefitness</title>
+<meta name="description" content="Descuentos exclusivos pf Black Card en marcas participantes.">
+<style>
+  :root {
+    --fondo: #12001f;
+    --fondo-tarjeta: #1c0230;
+    --texto: #ffffff;
+    --texto-suave: #cbb9da;
+    --morado: #7b16c9;
+    --morado-claro: #a855f7;
+    --amarillo: #ffe600;
+    --borde: rgba(255,255,255,.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px 16px 24px;
+  }
+  .contenedor { width: 100%; max-width: 480px; }
+  .marco {
+    background: var(--fondo-tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  }
+  .promo { display: block; width: 100%; height: auto; }
+  .cargando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 9 / 16;
+    color: var(--texto-suave);
+    font-size: .95rem;
+    text-align: center;
+    padding: 24px;
+  }
+  .acciones { margin-top: 18px; display: grid; gap: 10px; }
+  .boton {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 16px 20px;
+    border-radius: 999px;
+    background: var(--amarillo);
+    color: #1a1a1a;
+    border: 2px solid var(--amarillo);
+    transition: transform .08s ease, filter .15s ease;
+  }
+  .boton:active { transform: scale(.98); }
+  .boton.secundario {
+    background: transparent;
+    color: var(--texto);
+    border-color: var(--morado-claro);
+  }
+  .pie {
+    margin-top: 18px;
+    text-align: center;
+    color: var(--texto-suave);
+    font-size: .78rem;
+    line-height: 1.5;
+  }
+  @media (min-width: 700px) {
+    body { padding-top: 32px; }
+  }
+</style>
+</head>
+<body>
+  <main class="contenedor">
+    <div class="marco">
+      <div class="cargando" id="cargando">Cargando la promoción…</div>
+      <a id="ligaImagen" href="https://planetfitness.mx" target="_blank" rel="noopener">
+        <img class="promo" id="promo" alt="Benefitness: descuentos exclusivos pf Black Card en marcas participantes." style="display:none">
+      </a>
+    </div>
+
+    <div class="acciones">
+      <a class="boton" href="https://planetfitness.mx" target="_blank" rel="noopener">Ver todos los beneficios</a>
+      <a class="boton secundario" href="https://planetfitness.mx" target="_blank" rel="noopener">Ir a planetfitness.mx</a>
+    </div>
+
+    <p class="pie">
+      Consulta términos y condiciones en planetfitness.mx.<br>
+      Promoción vigente para socios pf Black Card.
+    </p>
+  </main>
+
+<script>
+  // La imagen vive en OneDrive: al reemplazarla ahí, esta página muestra la nueva.
+  var ORIGEN = "https://fitnessparatodoss-my.sharepoint.com/:i:/g/personal/marketing_fpt_com_mx/IQB8zY5HrNBASLpwdS5jQ-98Ab-Y3E9keh01VoyFBFVrjPM?download=1";
+  var img = document.getElementById("promo");
+  var cargando = document.getElementById("cargando");
+  img.onload = function () {
+    cargando.style.display = "none";
+    img.style.display = "block";
+  };
+  img.onerror = function () {
+    cargando.textContent = "No se pudo cargar la promoción. Revisa tu conexión e inténtalo de nuevo.";
+  };
+  // El parámetro de tiempo evita que el celular muestre una imagen vieja guardada en caché.
+  img.src = ORIGEN + "&cb=" + Math.floor(Date.now() / 60000);
+</script>
+</body>
+</html>
