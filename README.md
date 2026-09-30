@@ -9,8 +9,10 @@ necesita cookies de otro sitio y Safari en iPhone las bloquea: la imagen no carg
 ## Cómo se actualiza la promoción
 
 1. Marketing reemplaza `PF_BC_ALIANZAS_01.jpg` en OneDrive, con el mismo nombre.
-2. En `Claude\qr` se corre `python actualizar-imagen.py`, que la baja, la reduce a 1080 px
-   de ancho y la deja en esta carpeta como `promo.jpg`.
-3. `git add -A`, `git commit` y `git push origin main`.
+2. Una GitHub Action revisa OneDrive **cada hora**, baja la imagen, la reduce a 1080 px de
+   ancho y la publica aqui como `promo.jpg`. No hay que hacer nada mas.
+
+Para no esperar la hora: pestana **Actions** -> "Actualizar la imagen de la promocion" ->
+**Run workflow**. A mano tambien se puede, con `python sincronizar-imagen.py` y un push.
 
 Mantenimiento: Infraestructura y Servicios TI, Fitness Para Todos.
