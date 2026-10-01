@@ -172,7 +172,8 @@
     var primera = carrusel.querySelector(".lamina");
     if (!primera) return carrusel.clientWidth;
     var separacion = parseFloat(getComputedStyle(carrusel).columnGap) || 0;
-    return primera.getBoundingClientRect().width + separacion;
+    // offsetWidth, no getBoundingClientRect: el rect viene encogido por el efecto de escala.
+    return primera.offsetWidth + separacion;
   }
 
   // El hueco de los lados debe ser justo lo que sobra de la lámina del centro. Así la
@@ -231,8 +232,9 @@
   function ajustarAlto() {
     var activa = carrusel.children[actual];
     if (!activa) return;
-    var alto = activa.getBoundingClientRect().height;
-    if (alto) carrusel.style.height = Math.ceil(alto) + "px";
+    // offsetHeight ignora el efecto de escala; con el rect la imagen salía recortada abajo.
+    var alto = activa.offsetHeight;
+    if (alto) carrusel.style.height = Math.ceil(alto) + 2 + "px";
   }
 
   window.addEventListener("resize", function () {
