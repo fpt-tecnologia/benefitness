@@ -161,6 +161,25 @@
   </main>
 
 <script>
+  // Medición con Microsoft Clarity. El QR de cada club trae ?c=<etiqueta> en la liga, y esa
+  // etiqueta se manda como "club" para poder separar los escaneos por sucursal.
+  // Mientras CLARITY esté vacío no se carga nada ni se manda ningún dato.
+  var CLARITY = "yr2mvc2xmw";
+
+  (function () {
+    if (!CLARITY) return;
+    var club = (new URLSearchParams(location.search).get("c") || "sin-etiqueta")
+      .replace(/[^a-z0-9-]/gi, "").slice(0, 40).toLowerCase();
+
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", CLARITY);
+
+    window.clarity("set", "club", club);
+  })();
+
   // Las imágenes las publica sincronizar-imagenes.py desde OneDrive, cada hora.
   var SEGUNDOS = 5;   // cada cuánto cambia de imagen
   var ESPERA = 10;    // cuánto espera para reanudar después de que alguien desliza
