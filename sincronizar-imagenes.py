@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 import requests
-from PIL import Image
+from PIL import Image, ImageChops
 
 LIGA_CARPETA = (
     "https://fitnessparatodoss-my.sharepoint.com/:f:/g/personal/marketing_fpt_com_mx/"
@@ -68,12 +68,26 @@ def listar(sesion):
     return sorted(archivos, key=lambda it: it["name"].lower())
 
 
-def guardar(sesion, archivo, destino):
-    """Baja una imagen, la reduce a 1080 px de ancho y la guarda como JPG."""
+def recortar_blanco(im):
+    """Quita el marco blanco que traen los archivos de diseño.
+
+    Sin esto se ve un contorno blanco alrededor de cada promoción, porque el cupón viene
+    centrado en un lienzo blanco más grande.
+    """
+    blanco = Image.new("RGB", im.size, (255, 255, 255))
+    mancha = ImageChops.difference(im, blanco).convert("L").point(lambda p: 255 if p > 12 else 0)
+    caja = mancha.getbbox()
+    return im.crop(caja) if caja else im
+
+
+def guardar(sesion, archivo, destino, recortar=True):
+    """Baja una imagen, le quita el marco blanco, la reduce a 1080 px y la guarda como JPG."""
     datos = sesion.get(archivo["@content.downloadUrl"], timeout=600).content
     im = Image.open(io.BytesIO(datos))
     if im.mode != "RGB":
         im = im.convert("RGB")
+    if recortar:
+        im = recortar_blanco(im)
     if im.width > ANCHO_MAX:
         im = im.resize((ANCHO_MAX, round(im.height * ANCHO_MAX / im.width)), Image.LANCZOS)
     im.save(destino, "JPEG", quality=CALIDAD, optimize=True, progressive=True)
@@ -96,7 +110,7 @@ def main():
     # El fondo solo se reemplaza cuando hay un archivo FONDO en la carpeta. Si no lo hay,
     # se deja el que ya está publicado: así una carpeta sin fondo no deja la página sin él.
     if fondo:
-        guardar(sesion, fondo, FONDO)
+        guardar(sesion, fondo, FONDO, recortar=False)
         print(f"{fondo['name']} -> fondo.jpg")
     elif FONDO.exists():
         print("Sin archivo FONDO en OneDrive: se conserva el fondo publicado.")

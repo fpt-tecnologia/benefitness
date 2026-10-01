@@ -72,7 +72,7 @@
   .lamina {
     flex: 0 0 var(--lamina-px, var(--ancho-lamina));
     scroll-snap-align: center;
-    border-radius: 16px;
+    border-radius: var(--radio-lamina, 14px);  /* igual que las esquinas del diseño */
     overflow: hidden;
     background: transparent;
     opacity: .4;
@@ -235,9 +235,22 @@
       getComputedStyle(document.documentElement).getPropertyValue("--ancho-lamina")
     ) / 100;
     if (!disponible || !proporcion) return;
-    var lamina = Math.round(disponible * proporcion);
+
+    // La tarjeta se limita por lo ancho y también por lo alto: en pantallas cortas manda el
+    // alto, para que la promoción nunca salga cortada.
+    var img = carrusel.querySelector("img");
+    var forma = img && img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1.25;
+    var alto = carrusel.parentElement.clientHeight
+      - (controles.hidden ? 0 : controles.offsetHeight + 10)
+      - (document.querySelector(".pie").offsetHeight + 14)
+      - 8;
+
+    var lamina = Math.round(Math.min(disponible * proporcion, alto / forma));
+    if (lamina < 120) lamina = Math.round(disponible * proporcion);
+
     var sobra = Math.max(0, (disponible - lamina) / 2);
     carrusel.style.setProperty("--lamina-px", lamina + "px");
+    carrusel.style.setProperty("--radio-lamina", Math.round(lamina * 0.04) + "px");
     carrusel.style.paddingLeft = sobra + "px";
     carrusel.style.paddingRight = sobra + "px";
   }
@@ -351,7 +364,7 @@
       laminas = lista.length;
       // Cuando cada imagen termina de cargar puede cambiar el alto: se vuelve a medir.
       Array.prototype.forEach.call(carrusel.querySelectorAll("img"), function (img) {
-        img.addEventListener("load", ajustarAlto);
+        img.addEventListener("load", function () { ajustarMargenes(); ajustarAlto(); });
       });
       ajustarMargenes();
       if (laminas === 1) {
