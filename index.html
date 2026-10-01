@@ -145,6 +145,21 @@
     transform: scale(1.3);
   }
 
+  .acciones { margin-top: 14px; text-align: center; }
+  .boton {
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: var(--amarillo);
+    color: #1a1a1a;
+    box-shadow: 0 6px 18px rgba(0,0,0,.28);
+    transition: transform .08s ease;
+  }
+  .boton:active { transform: scale(.97); }
+
   .pie {
     margin: 14px auto 0;
     text-shadow: 0 1px 3px rgba(0,0,0,.45);
@@ -173,8 +188,12 @@
       <button class="flecha" id="siguiente" type="button" aria-label="Promoción siguiente">&#8250;</button>
     </div>
 
+    <div class="acciones">
+      <a class="boton" href="https://www.planetfitness.mx" target="_blank" rel="noopener">Inscríbete aquí</a>
+    </div>
+
     <p class="pie">
-      Consulta términos y condiciones en planetfitness.mx/descuentos<br>
+      Consulta términos y condiciones en planetfitness.mx<br>
       Promoción válida para socios inscritos con la membresía PF Black Card®.
     </p>
   </main>
@@ -240,8 +259,10 @@
     // alto, para que la promoción nunca salga cortada.
     var img = carrusel.querySelector("img");
     var forma = img && img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1.25;
+    var acciones = document.querySelector(".acciones");
     var alto = carrusel.parentElement.clientHeight
       - (controles.hidden ? 0 : controles.offsetHeight + 10)
+      - (acciones ? acciones.offsetHeight + 14 : 0)
       - (document.querySelector(".pie").offsetHeight + 14)
       - 8;
 
