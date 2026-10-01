@@ -8,13 +8,12 @@
 <style>
   :root {
     --fondo: #12001f;
-    --fondo-tarjeta: #1c0230;
     --texto: #ffffff;
     --texto-suave: #cbb9da;
-    --morado: #7b16c9;
-    --morado-claro: #a855f7;
     --amarillo: #ffe600;
     --borde: rgba(255,255,255,.14);
+    --ancho-lamina: 84%;   /* lo que mide la del centro; el resto deja ver las vecinas */
+    --separacion: 14px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -26,59 +25,121 @@
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    padding: 16px 16px 24px;
+    padding: 20px 0 28px;
   }
-  .contenedor { width: 100%; max-width: 480px; }
-  .marco {
-    background: var(--fondo-tarjeta);
-    border: 1px solid var(--borde);
-    border-radius: 18px;
+  .contenedor { width: 100%; max-width: 760px; }
+
+  /* Carrusel: la del centro se ve completa y las de los lados asoman, atenuadas. */
+  .carrusel {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--separacion);
+    transition: height .35s ease;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0;  /* los márgenes laterales los calcula el script, para poder centrar
+                        también la primera y la última */
+  }
+  .carrusel::-webkit-scrollbar { display: none; }
+
+  .lamina {
+    flex: 0 0 var(--lamina-px, var(--ancho-lamina));
+    scroll-snap-align: center;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+    background: #1c0230;
+    border: 1px solid var(--borde);
+    opacity: .45;
+    transform: scale(.93);
+    transition: opacity .35s ease, transform .35s ease, box-shadow .35s ease;
+  }
+  .lamina.activa {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 12px 38px rgba(0,0,0,.5);
   }
   .promo { display: block; width: 100%; height: auto; }
-  .acciones { margin-top: 18px; display: grid; gap: 10px; }
-  .boton {
-    display: block;
+  .aviso {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 9 / 16;
+    padding: 24px;
     text-align: center;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.05rem;
-    padding: 16px 20px;
-    border-radius: 999px;
-    background: var(--amarillo);
-    color: #1a1a1a;
-    border: 2px solid var(--amarillo);
-    transition: transform .08s ease, filter .15s ease;
+    color: var(--texto-suave);
+    font-size: .95rem;
   }
-  .boton:active { transform: scale(.98); }
-  .boton.secundario {
-    background: transparent;
-    color: var(--texto);
-    border-color: var(--morado-claro);
-  }
-  .pie {
+
+  /* Controles: flechas a los lados de los puntos, como en la referencia. */
+  .controles {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     margin-top: 18px;
+  }
+  .flecha {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color .2s ease, background .2s ease;
+  }
+  .flecha:hover { color: var(--texto); background: rgba(255,255,255,.08); }
+  .puntos { display: flex; gap: 9px; }
+  .punto {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.28);
+    cursor: pointer;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .punto[aria-current="true"] {
+    background: var(--amarillo);
+    transform: scale(1.3);
+  }
+
+  .pie {
+    margin: 18px auto 0;
+    max-width: 420px;
+    padding: 0 16px;
     text-align: center;
     color: var(--texto-suave);
     font-size: .78rem;
     line-height: 1.5;
   }
+
   @media (min-width: 700px) {
-    body { padding-top: 32px; }
+    :root { --ancho-lamina: 52%; --separacion: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carrusel { scroll-behavior: auto; }
+    .lamina { transition: none; }
   }
 </style>
 </head>
 <body>
   <main class="contenedor">
-    <div class="marco">
-      <a id="ligaImagen" href="https://www.planetfitness.mx/descuentos" target="_blank" rel="noopener">
-        <img class="promo" id="promo" src="promo.jpg" alt="Benefitness: descuentos exclusivos pf Black Card en marcas participantes.">
-      </a>
-    </div>
+    <div class="carrusel" id="carrusel" aria-label="Promociones Benefitness"></div>
 
-    <div class="acciones">
-      <a class="boton" href="https://www.planetfitness.mx/descuentos" target="_blank" rel="noopener">Descubre tus cupones aquí</a>
+    <div class="controles" id="controles" hidden>
+      <button class="flecha" id="anterior" type="button" aria-label="Promoción anterior">&#8249;</button>
+      <div class="puntos" id="puntos"></div>
+      <button class="flecha" id="siguiente" type="button" aria-label="Promoción siguiente">&#8250;</button>
     </div>
 
     <p class="pie">
@@ -87,5 +148,166 @@
     </p>
   </main>
 
+<script>
+  // Las imágenes las publica sincronizar-imagenes.py desde OneDrive, cada hora.
+  var SEGUNDOS = 5;   // cada cuánto cambia de imagen
+  var ESPERA = 10;    // cuánto espera para reanudar después de que alguien desliza
+  var carrusel = document.getElementById("carrusel");
+  var controles = document.getElementById("controles");
+  var puntos = document.getElementById("puntos");
+  var laminas = 0;
+  var actual = 0;
+  var automatico = null;
+  var espera = null;
+  var desplazando = false;
+  var finDesplazamiento = null;
+  var finScroll = null;
+
+  function aviso(texto) {
+    carrusel.innerHTML = '<div class="lamina activa"><div class="aviso">' + texto + "</div></div>";
+  }
+
+  function paso() {
+    // Ancho de una lámina más la separación: lo que hay que recorrer para cambiar de imagen.
+    var primera = carrusel.querySelector(".lamina");
+    if (!primera) return carrusel.clientWidth;
+    var separacion = parseFloat(getComputedStyle(carrusel).columnGap) || 0;
+    return primera.getBoundingClientRect().width + separacion;
+  }
+
+  // El hueco de los lados debe ser justo lo que sobra de la lámina del centro. Así la
+  // primera y la última también quedan centradas, con su vecina asomando.
+  function ajustarMargenes() {
+    var disponible = carrusel.parentElement.clientWidth;
+    var proporcion = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--ancho-lamina")
+    ) / 100;
+    if (!disponible || !proporcion) return;
+    var lamina = Math.round(disponible * proporcion);
+    var sobra = Math.max(0, (disponible - lamina) / 2);
+    carrusel.style.setProperty("--lamina-px", lamina + "px");
+    carrusel.style.paddingLeft = sobra + "px";
+    carrusel.style.paddingRight = sobra + "px";
+  }
+
+  function pintarControles() {
+    if (laminas < 2) return;
+    for (var i = 0; i < laminas; i++) {
+      var p = document.createElement("button");
+      p.className = "punto";
+      p.type = "button";
+      p.setAttribute("aria-label", "Ver promoción " + (i + 1) + " de " + laminas);
+      p.addEventListener("click", (function (indice) {
+        return function () { irA(indice); pausar(); };
+      })(i));
+      puntos.appendChild(p);
+    }
+    document.getElementById("anterior").addEventListener("click", function () {
+      irA((actual - 1 + laminas) % laminas); pausar();
+    });
+    document.getElementById("siguiente").addEventListener("click", function () {
+      irA((actual + 1) % laminas); pausar();
+    });
+    controles.hidden = false;
+    marcar(0);
+  }
+
+  function marcar(indice) {
+    actual = indice;
+    var botones = puntos.children;
+    for (var i = 0; i < botones.length; i++) {
+      botones[i].setAttribute("aria-current", i === indice ? "true" : "false");
+    }
+    var todas = carrusel.children;
+    for (var j = 0; j < todas.length; j++) {
+      todas[j].classList.toggle("activa", j === indice);
+    }
+    ajustarAlto();
+  }
+
+  // Las promociones no siempre traen la misma proporción: unas son horizontales y otras
+  // verticales. El carrusel toma el alto de la que está al centro, para que ninguna salga
+  // recortada ni con barras negras.
+  function ajustarAlto() {
+    var activa = carrusel.children[actual];
+    if (!activa) return;
+    var alto = activa.getBoundingClientRect().height;
+    if (alto) carrusel.style.height = Math.ceil(alto) + "px";
+  }
+
+  window.addEventListener("resize", function () {
+    carrusel.style.height = "";
+    ajustarMargenes();
+    setTimeout(function () { irA(actual); }, 60);
+  });
+
+  function irA(indice) {
+    // Mientras el carrusel se desliza solo, no se vuelve a calcular el índice: la posición
+    // intermedia haría parpadear los puntos y el alto.
+    desplazando = true;
+    clearTimeout(finDesplazamiento);
+    finDesplazamiento = setTimeout(function () { desplazando = false; }, 600);
+    carrusel.scrollTo({ left: paso() * indice, behavior: "smooth" });
+    marcar(indice);
+  }
+
+  function avanzarSolo() {
+    if (laminas < 2 || automatico) return;
+    automatico = setInterval(function () {
+      irA((actual + 1) % laminas);
+    }, SEGUNDOS * 1000);
+  }
+
+  // Mientras la persona desliza, el avance automático se detiene; se reanuda al soltar.
+  function pausar() {
+    if (automatico) { clearInterval(automatico); automatico = null; }
+    clearTimeout(espera);
+    espera = setTimeout(avanzarSolo, ESPERA * 1000);
+  }
+
+  // Se recalcula cuando la persona termina de deslizar, no en cada pixel.
+  carrusel.addEventListener("scroll", function () {
+    if (desplazando) return;
+    clearTimeout(finScroll);
+    finScroll = setTimeout(function () {
+      var ancho = paso();
+      if (!ancho) return;
+      var indice = Math.min(laminas - 1, Math.round(carrusel.scrollLeft / ancho));
+      if (indice !== actual && indice >= 0) marcar(indice);
+    }, 120);
+  }, { passive: true });
+
+  carrusel.addEventListener("touchstart", pausar, { passive: true });
+  carrusel.addEventListener("pointerdown", pausar, { passive: true });
+  carrusel.addEventListener("wheel", pausar, { passive: true });
+
+  fetch("imagenes.json?v=" + Math.floor(Date.now() / 60000))
+    .then(function (r) { return r.json(); })
+    .then(function (datos) {
+      var lista = (datos && datos.imagenes) || [];
+      if (!lista.length) { aviso("No hay promociones por ahora."); return; }
+      carrusel.innerHTML = lista.map(function (nombre, i) {
+        return '<div class="lamina"><img class="promo" src="' + nombre +
+               '" alt="Promoción Benefitness ' + (i + 1) + ' de ' + lista.length +
+               '" loading="' + (i === 0 ? "eager" : "lazy") + '"></div>';
+      }).join("");
+      laminas = lista.length;
+      // Cuando cada imagen termina de cargar puede cambiar el alto: se vuelve a medir.
+      Array.prototype.forEach.call(carrusel.querySelectorAll("img"), function (img) {
+        img.addEventListener("load", ajustarAlto);
+      });
+      ajustarMargenes();
+      if (laminas === 1) {
+        carrusel.firstElementChild.classList.add("activa");
+        setTimeout(ajustarAlto, 60);
+        return;
+      }
+      pintarControles();
+      avanzarSolo();
+    })
+    .catch(function () {
+      aviso("No se pudieron cargar las promociones. Revisa tu conexión e inténtalo de nuevo.");
+    });
+</script>
 </body>
 </html>
