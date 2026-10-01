@@ -24,8 +24,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;   /* en pantalla de celular queda al centro, no pegado arriba */
     min-height: 100vh;
+    min-height: 100svh;        /* evita el salto por la barra del navegador en el celular */
     padding: 20px 0 28px;
+    overflow-x: hidden;
   }
   .contenedor { width: 100%; max-width: 760px; }
 
@@ -78,12 +81,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    margin-top: 18px;
+    gap: 6px;
+    margin-top: 10px;
   }
   .flecha {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
     padding: 0;
@@ -97,18 +100,27 @@
     transition: color .2s ease, background .2s ease;
   }
   .flecha:hover { color: var(--texto); background: rgba(255,255,255,.08); }
-  .puntos { display: flex; gap: 9px; }
+  .puntos { display: flex; gap: 2px; }
+  /* El botón mide 28px para que el dedo le atine; el puntito visible es el de ::after. */
   .punto {
-    width: 8px;
-    height: 8px;
+    width: 28px;
+    height: 44px;
     padding: 0;
     border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .punto::after {
+    content: "";
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: rgba(255,255,255,.28);
-    cursor: pointer;
     transition: background .2s ease, transform .2s ease;
   }
-  .punto[aria-current="true"] {
+  .punto[aria-current="true"]::after {
     background: var(--amarillo);
     transform: scale(1.3);
   }
