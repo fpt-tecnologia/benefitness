@@ -33,6 +33,10 @@ API = "https://fitnessparatodoss-my.sharepoint.com/personal/marketing_fpt_com_mx
 
 AQUI = Path(__file__).parent
 MANIFIESTO = AQUI / "imagenes.json"
+FONDO = AQUI / "fondo.jpg"
+# El archivo de la carpeta cuyo nombre empiece con FONDO se usa como fondo de la página,
+# no como una promoción más del carrusel.
+PREFIJO_FONDO = "FONDO"
 ANCHO_MAX = 1080
 CALIDAD = 82
 EXTENSIONES = {".jpg", ".jpeg", ".png", ".webp"}
@@ -64,34 +68,51 @@ def listar(sesion):
     return sorted(archivos, key=lambda it: it["name"].lower())
 
 
+def guardar(sesion, archivo, destino):
+    """Baja una imagen, la reduce a 1080 px de ancho y la guarda como JPG."""
+    datos = sesion.get(archivo["@content.downloadUrl"], timeout=600).content
+    im = Image.open(io.BytesIO(datos))
+    if im.mode != "RGB":
+        im = im.convert("RGB")
+    if im.width > ANCHO_MAX:
+        im = im.resize((ANCHO_MAX, round(im.height * ANCHO_MAX / im.width)), Image.LANCZOS)
+    im.save(destino, "JPEG", quality=CALIDAD, optimize=True, progressive=True)
+    return im.width, im.height, destino.stat().st_size / 1024
+
+
 def main():
     sesion = requests.Session()
     sesion.headers.update(NAVEGADOR)
 
-    archivos = listar(sesion)
+    todos = listar(sesion)
+    fondo = next((a for a in todos if a["name"].upper().startswith(PREFIJO_FONDO)), None)
+    archivos = [a for a in todos if a is not fondo]
     if not archivos:
         sys.exit(
             "La carpeta QR BENEFITNESS no tiene imágenes, o la liga para compartir dejó de "
             "funcionar. No se toca lo que ya está publicado."
         )
 
+    # El fondo solo se reemplaza cuando hay un archivo FONDO en la carpeta. Si no lo hay,
+    # se deja el que ya está publicado: así una carpeta sin fondo no deja la página sin él.
+    if fondo:
+        guardar(sesion, fondo, FONDO)
+        print(f"{fondo['name']} -> fondo.jpg")
+    elif FONDO.exists():
+        print("Sin archivo FONDO en OneDrive: se conserva el fondo publicado.")
+
     publicadas = []
     for numero, archivo in enumerate(archivos, start=1):
-        datos = sesion.get(archivo["@content.downloadUrl"], timeout=600).content
-        im = Image.open(io.BytesIO(datos))
-        if im.mode != "RGB":
-            im = im.convert("RGB")
-        if im.width > ANCHO_MAX:
-            im = im.resize((ANCHO_MAX, round(im.height * ANCHO_MAX / im.width)), Image.LANCZOS)
-
         nombre = f"promo-{numero}.jpg"
-        im.save(AQUI / nombre, "JPEG", quality=CALIDAD, optimize=True, progressive=True)
+        ancho, alto, peso = guardar(sesion, archivo, AQUI / nombre)
         publicadas.append(nombre)
-        peso = (AQUI / nombre).stat().st_size / 1024
-        print(f"{archivo['name']} -> {nombre}  {im.width}x{im.height}, {peso:.0f} KB")
+        print(f"{archivo['name']} -> {nombre}  {ancho}x{alto}, {peso:.0f} KB")
 
+    manifiesto = {"imagenes": publicadas}
+    if FONDO.exists():
+        manifiesto["fondo"] = FONDO.name
     MANIFIESTO.write_text(
-        json.dumps({"imagenes": publicadas}, indent=2, ensure_ascii=False) + "\n",
+        json.dumps(manifiesto, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 

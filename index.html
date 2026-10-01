@@ -12,7 +12,7 @@
     --texto-suave: #cbb9da;
     --amarillo: #ffe600;
     --borde: rgba(255,255,255,.14);
-    --ancho-lamina: 84%;   /* lo que mide la del centro; el resto deja ver las vecinas */
+    --ancho-lamina: 78%;   /* lo que mide la del centro; el resto deja ver las vecinas */
     --separacion: 14px;
   }
   * { box-sizing: border-box; }
@@ -22,15 +22,36 @@
     color: var(--texto);
     font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    justify-content: center;   /* en pantalla de celular queda al centro, no pegado arriba */
     min-height: 100vh;
     min-height: 100svh;        /* evita el salto por la barra del navegador en el celular */
-    padding: 20px 0 28px;
     overflow-x: hidden;
   }
-  .contenedor { width: 100%; max-width: 760px; }
+
+  /* El fondo manda: todo se acomoda dentro de él, en su misma proporción, para que el
+     carrusel caiga siempre debajo del encabezado del diseño. */
+  .escenario {
+    position: relative;
+    width: 100%;
+    max-width: 520px;      /* en pantallas anchas se queda del ancho de un celular */
+    height: 100svh;
+    background-color: var(--fondo);
+    background-image: var(--fondo-imagen, none);
+    background-size: cover;
+    background-position: center top;
+    overflow: hidden;
+  }
+  .contenedor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--inicio-contenido, 35%);
+    bottom: 3%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 
   /* Carrusel: la del centro se ve completa y las de los lados asoman, atenuadas. */
   .carrusel {
@@ -53,9 +74,8 @@
     scroll-snap-align: center;
     border-radius: 16px;
     overflow: hidden;
-    background: #1c0230;
-    border: 1px solid var(--borde);
-    opacity: .45;
+    background: transparent;
+    opacity: .4;
     transform: scale(.93);
     transition: opacity .35s ease, transform .35s ease, box-shadow .35s ease;
   }
@@ -126,18 +146,16 @@
   }
 
   .pie {
-    margin: 18px auto 0;
+    margin: 14px auto 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,.45);
     max-width: 420px;
     padding: 0 16px;
     text-align: center;
-    color: var(--texto-suave);
+    color: rgba(255,255,255,.85);
     font-size: .78rem;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
-  @media (min-width: 700px) {
-    :root { --ancho-lamina: 52%; --separacion: 18px; }
-  }
   @media (prefers-reduced-motion: reduce) {
     .carrusel { scroll-behavior: auto; }
     .lamina { transition: none; }
@@ -145,6 +163,7 @@
 </style>
 </head>
 <body>
+  <div class="escenario" id="escenario">
   <main class="contenedor">
     <div class="carrusel" id="carrusel" aria-label="Promociones Benefitness"></div>
 
@@ -159,6 +178,7 @@
       Promoción válida para socios inscritos con la membresía PF Black Card®.
     </p>
   </main>
+  </div>
 
 <script>
   // Medición con Microsoft Clarity. El QR de cada club trae ?c=<etiqueta> en la liga, y esa
@@ -317,6 +337,10 @@
   fetch("imagenes.json?v=" + Math.floor(Date.now() / 60000))
     .then(function (r) { return r.json(); })
     .then(function (datos) {
+      if (datos && datos.fondo) {
+        document.getElementById("escenario").style
+          .setProperty("--fondo-imagen", 'url("' + datos.fondo + '")');
+      }
       var lista = (datos && datos.imagenes) || [];
       if (!lista.length) { aviso("No hay promociones por ahora."); return; }
       carrusel.innerHTML = lista.map(function (nombre, i) {
