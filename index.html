@@ -84,6 +84,7 @@
     transform: scale(1);
     box-shadow: 0 12px 38px rgba(0,0,0,.5);
   }
+  .liga-promo { display: block; -webkit-tap-highlight-color: transparent; }
   .promo { display: block; width: 100%; height: auto; }
   .aviso {
     display: flex;
@@ -219,6 +220,7 @@
   })();
 
   // Las imágenes las publica sincronizar-imagenes.py desde OneDrive, cada hora.
+  var DESTINO = "https://www.planetfitness.mx/descuentos";  // a dónde lleva tocar una promoción
   var SEGUNDOS = 5;   // cada cuánto cambia de imagen
   var ESPERA = 10;    // cuánto espera para reanudar después de que alguien desliza
   var carrusel = document.getElementById("carrusel");
@@ -363,6 +365,19 @@
     }, 120);
   }, { passive: true });
 
+  // Si el dedo se arrastró para deslizar, el toque no cuenta como clic: así no se abre
+  // la liga sin querer al pasar de una promoción a otra.
+  var inicioX = 0, inicioY = 0, arrastro = false;
+  carrusel.addEventListener("pointerdown", function (e) {
+    inicioX = e.clientX; inicioY = e.clientY; arrastro = false;
+  }, { passive: true });
+  carrusel.addEventListener("pointermove", function (e) {
+    if (Math.abs(e.clientX - inicioX) > 10 || Math.abs(e.clientY - inicioY) > 10) arrastro = true;
+  }, { passive: true });
+  carrusel.addEventListener("click", function (e) {
+    if (arrastro) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
   carrusel.addEventListener("touchstart", pausar, { passive: true });
   carrusel.addEventListener("pointerdown", pausar, { passive: true });
   carrusel.addEventListener("wheel", pausar, { passive: true });
@@ -377,9 +392,10 @@
       var lista = (datos && datos.imagenes) || [];
       if (!lista.length) { aviso("No hay promociones por ahora."); return; }
       carrusel.innerHTML = lista.map(function (nombre, i) {
-        return '<div class="lamina"><img class="promo" src="' + nombre +
+        return '<div class="lamina"><a class="liga-promo" href="' + DESTINO +
+               '" target="_blank" rel="noopener"><img class="promo" src="' + nombre +
                '" alt="Promoción Benefitness ' + (i + 1) + ' de ' + lista.length +
-               '" loading="' + (i === 0 ? "eager" : "lazy") + '"></div>';
+               '" loading="' + (i === 0 ? "eager" : "lazy") + '"></a></div>';
       }).join("");
       laminas = lista.length;
       // Cuando cada imagen termina de cargar puede cambiar el alto: se vuelve a medir.
