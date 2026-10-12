@@ -36,17 +36,20 @@
     width: 100%;
     max-width: 520px;      /* en pantallas anchas se queda del ancho de un celular */
     height: 100svh;
-    background-color: var(--fondo);
+    /* El arte se ve completo a lo ancho; lo que sobra abajo se rellena con su mismo
+       tono final, para que no se note el corte. */
+    background-color: #37015e;
     background-image: var(--fondo-imagen, none);
-    background-size: cover;
+    background-size: 100% auto;
     background-position: center top;
+    background-repeat: no-repeat;
     overflow: hidden;
   }
   .contenedor {
     position: absolute;
     left: 0;
     right: 0;
-    top: var(--inicio-contenido, 35%);
+    top: var(--inicio-contenido, 33%);   /* justo debajo del texto del fondo, que termina al 31% */
     bottom: 3%;
     display: flex;
     flex-direction: column;
