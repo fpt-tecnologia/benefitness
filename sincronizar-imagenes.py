@@ -17,6 +17,7 @@ navegador acepta sus cookies, y Safari en iPhone las bloquea por ser de otro sit
 """
 
 import base64
+import hashlib
 import io
 import json
 import sys
@@ -80,6 +81,16 @@ def recortar_blanco(im):
     return im.crop(caja) if caja else im
 
 
+def huella(archivo):
+    """Ocho caracteres que cambian solo si el archivo cambió.
+
+    Se pega al nombre en imagenes.json (`promo-1.jpg?v=ab12cd34`) para que el celular baje
+    la imagen nueva en cuanto se publica, en vez de mostrar la guardada en caché hasta por
+    diez minutos. Si el archivo no cambió, la huella es la misma y se sigue usando el caché.
+    """
+    return hashlib.md5(archivo.read_bytes()).hexdigest()[:8]
+
+
 def guardar(sesion, archivo, destino, recortar=True):
     """Baja una imagen, le quita el marco blanco, la reduce a 1080 px y la guarda como JPG."""
     datos = sesion.get(archivo["@content.downloadUrl"], timeout=600).content
@@ -119,20 +130,21 @@ def main():
     for numero, archivo in enumerate(archivos, start=1):
         nombre = f"promo-{numero}.jpg"
         ancho, alto, peso = guardar(sesion, archivo, AQUI / nombre)
-        publicadas.append(nombre)
+        publicadas.append(f"{nombre}?v={huella(AQUI / nombre)}")
         print(f"{archivo['name']} -> {nombre}  {ancho}x{alto}, {peso:.0f} KB")
 
     manifiesto = {"imagenes": publicadas}
     if FONDO.exists():
-        manifiesto["fondo"] = FONDO.name
+        manifiesto["fondo"] = f"{FONDO.name}?v={huella(FONDO)}"
     MANIFIESTO.write_text(
         json.dumps(manifiesto, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
     # Limpia las que sobraron de una sincronización anterior con más imágenes.
+    vigentes = {n.split("?")[0] for n in publicadas}
     for viejo in AQUI.glob("promo-*.jpg"):
-        if viejo.name not in publicadas:
+        if viejo.name not in vigentes:
             viejo.unlink()
             print(f"Quitada: {viejo.name}")
 

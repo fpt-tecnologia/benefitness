@@ -1,11 +1,11 @@
 {
   "imagenes": [
-    "promo-1.jpg",
-    "promo-2.jpg",
-    "promo-3.jpg",
-    "promo-4.jpg",
-    "promo-5.jpg",
-    "promo-6.jpg"
+    "promo-1.jpg?v=1f227b03",
+    "promo-2.jpg?v=0fb5b071",
+    "promo-3.jpg?v=df3866e3",
+    "promo-4.jpg?v=9dc97c6e",
+    "promo-5.jpg?v=8d36fc99",
+    "promo-6.jpg?v=af18c0f6"
   ],
-  "fondo": "fondo.jpg"
+  "fondo": "fondo.jpg?v=0eac42cc"
 }
